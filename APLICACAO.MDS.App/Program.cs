@@ -1,21 +1,35 @@
-using APLICACAO.MDS.App.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using APLICACAO.MDS.App.Data.Context;
+using APLICACAO.MDS.App.Services;
+using APLICACAO.MDS.App.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+
+//Dependendo do projeto usaria Scrutor para resolução de DI e demais configurações em uma classe de extensão
+builder.Services.AddDbContext<Contexto>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IFuncionarioService ,FuncionarioService>();
+
+
+
+
+
+
+
+
+
+
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

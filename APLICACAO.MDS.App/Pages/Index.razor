@@ -1,9 +1,86 @@
 ﻿@page "/"
+@using APLICACAO.MDS.App.Models
+@using APLICACAO.MDS.App.Services.Interfaces
+@inject IFuncionarioService FuncionarioService
 
-<PageTitle>Index</PageTitle>
+<h3>Funcionario Management</h3>
 
-<h1>Hello, world!</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Salary</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Funcionarios == null)
+        {
+            <tr><td colspan="4">Loading...</td></tr>
+        }
+        else
+        {
+            @foreach (var Funcionario in Funcionarios)
+            {
+                <tr>
+                    <td>@Funcionario.Name</td>
+                    <td>@Funcionario.Position</td>
+                    <td>@Funcionario.Salary</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditFuncionario(Funcionario)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteFuncionario(Funcionario.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
 
-Welcome to your new app.
+<h4>@(editing ? "Edit Funcionario" : "Add Funcionario")</h4>
+<div>
+    <input @bind="currentFuncionario.Name" placeholder="Name" class="form-control" />
+    <input @bind="currentFuncionario.Position" placeholder="Position" class="form-control" />
+    <input @bind="currentFuncionario.Salary" type="number" placeholder="Salary" class="form-control" />
+    <button class="btn btn-success" @onclick="SaveFuncionario">Save</button>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private List<Funcionario> Funcionarios;
+    private Funcionario currentFuncionario = new Funcionario();
+    private bool editing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Funcionarios = await FuncionarioService.GetAllFuncionariosAsync();
+    }
+
+    private async Task SaveFuncionario()
+    {
+        if (editing)
+        {
+            await FuncionarioService.UpdateFuncionarioAsync(currentFuncionario);
+            editing = false;
+        }
+        else
+        {
+            await FuncionarioService.AddFuncionarioAsync(currentFuncionario);
+        }
+
+        currentFuncionario = new Funcionario();
+        Funcionarios = await FuncionarioService.GetAllFuncionariosAsync();
+    }
+
+    private void EditFuncionario(Funcionario Funcionario)
+    {
+        currentFuncionario = Funcionario;
+        editing = true;
+    }
+
+    private async Task DeleteFuncionario(int id)
+    {
+        await FuncionarioService.DeleteFuncionarioAsync(id);
+        Funcionarios = await FuncionarioService.GetAllFuncionariosAsync();
+    }
+}
+
